@@ -1,0 +1,10 @@
+TranspWndsHKH/VS2008/Debug
+*.user
+VS2008/Debug
+TranspWndsHKH/VS2008/Release
+*.ipch
+VS2008/Release/
+*.sdf
+*.suo
+*.opensdf
+*.suo
