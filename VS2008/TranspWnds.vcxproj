@@ -94,6 +94,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\AboutDlg.cpp" />
     <ClCompile Include="..\src\App.cpp" />
+    <ClCompile Include="..\src\FullScreenTools.cpp" />
     <ClCompile Include="..\src\Hook.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\MouseHook.cpp" />
@@ -113,6 +114,7 @@
   <ItemGroup>
     <ClInclude Include="..\include\AboutDlg.h" />
     <ClInclude Include="..\include\App.h" />
+    <ClInclude Include="..\include\FullScreenTools.h" />
     <ClInclude Include="..\include\Hook.h" />
     <ClInclude Include="..\include\MouseHook.h" />
     <ClInclude Include="..\include\OSDWnd.h" />
