@@ -42,6 +42,7 @@ enum enHotKeyOperations
 	hkoToggleCaption,
 	hkoThroughClick,
 	hkoCollapseWnd,
+	hkoToggleFullScreen,
 	hkoCount
 };
 
@@ -68,6 +69,7 @@ public:
 	///\param fTopMost - TRUE,если окну был присвоен стиль WS_EX_TOPMOST 
 	///\param dwStyle - стиль окна,если у окна был убран заголовок, иначе 0
 	///\param dwNonCollapseHeight - высота окна до свёртывания высоты
+	///\param rcNormalPosition - размер и положение окна в нормальном состоянии
 	typedef struct tagWndInfo
 	{
 		BYTE bAlpha;
@@ -75,6 +77,7 @@ public:
 		BOOL fTopMost;
 		DWORD dwStyle;
 		DWORD dwNonCollapseHeight;
+		RECT rcNormalPosition;
 	}WNDINFO,*LPWNDINFO;
 	///\brief мап окно - информация о нём
 	std::map<HWND,WNDINFO> m_mapWndInfo;
@@ -106,4 +109,5 @@ public:
 	LRESULT ProcessThroughClick(UINT uMsg, PMSLLHOOKSTRUCT lpMouseHookStruct);
 	///\brief функция обработки свёртывания окна
 	LRESULT ProcessCollapseWnd(UINT uMsg, PMSLLHOOKSTRUCT lpMouseHookStruct);
+	LRESULT ProcessToggleFullscreenWnd(UINT uMsg, PMSLLHOOKSTRUCT lpMouseHookStruct);
 };

@@ -22,6 +22,7 @@
 #include "../Include/PropSystem.h"
 #include "../Include/PropTransparent.h"
 #include "../Include/PropOSD.h"
+#include "../Include/FullScreenTools.h"
 
 #include "../TranspWndsHKH/Include/TranspWndsHKH.h"
 
@@ -212,6 +213,12 @@ LRESULT CWorkWnd::OnOSDMessage(WPARAM wParam,LPARAM lParam)
 			ss<<_T("%");
 			m_osdWnd.ShowText(ss.str().c_str());
 		}
+		break;
+	case hkoToggleFullScreen:
+		if (FullScreenTools::isFullScreen((HWND)wParam))
+			m_osdWnd.ShowText(_T("Full Screen On"));
+		else
+			m_osdWnd.ShowText(_T("Full Screen Off"));
 		break;
 	}
 	return 1;

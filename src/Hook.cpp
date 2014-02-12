@@ -18,6 +18,7 @@
 #define _WIN32_WINNT 0x0500
 #include "../Include/Hook.h"
 #include "../Include/WorkWnd.h"
+#include "../include/FullScreenTools.h"
 
 #include "../TranspWndsHKH/Include/TranspWndsHKH.h"
 
@@ -68,6 +69,11 @@ CHook::CHook(void):
 	m_arHotKeyInfo[hkoCollapseWnd].m_fCtrl=TRUE;
 	m_arHotKeyInfo[hkoCollapseWnd].m_fShift=TRUE;
 	m_arHotKeyInfo[hkoCollapseWnd].m_uMsg[0]=WM_LBUTTONDOWN;
+
+	m_arHotKeyInfo[hkoToggleFullScreen].m_fCtrl=TRUE;
+	m_arHotKeyInfo[hkoToggleFullScreen].m_fWin=TRUE;
+	m_arHotKeyInfo[hkoToggleFullScreen].m_uMsg[0]=WM_RBUTTONDOWN;
+	
 }
 
 CHook::~CHook(void)
@@ -160,7 +166,10 @@ LRESULT CALLBACK MouseProc(int nCode,WPARAM wParam,LPARAM lParam)
 	lRes=theHook.ProcessCollapseWnd((UINT)wParam,(PMSLLHOOKSTRUCT)lParam);
 	if(lRes)
 		return lRes;
-	 
+	lRes=theHook.ProcessToggleFullscreenWnd((UINT)wParam,(PMSLLHOOKSTRUCT)lParam);
+	if(lRes)
+		return lRes;
+
 	return CallNextHookEx(theHook.m_hMouse,nCode,wParam,lParam);
 }
 
@@ -571,7 +580,64 @@ LRESULT CHook::ProcessCollapseWnd(UINT uMsg, PMSLLHOOKSTRUCT lpMouseHookStruct)
 }
 
 
+LRESULT CHook::ProcessToggleFullscreenWnd(UINT uMsg, PMSLLHOOKSTRUCT lpMouseHookStruct)
+{
+	if(!m_arHotKeyInfo[hkoToggleFullScreen].IsHotKey(lpMouseHookStruct))
+		return 0;
+	if(!m_arHotKeyInfo[hkoToggleFullScreen].IsMsg(0,uMsg))
+		return 0;
+	HWND hWnd=::WindowFromPoint(lpMouseHookStruct->pt);
+	if((hWnd=GetPopup(hWnd))==0)
+		return 0;
+	if(!FullScreenTools::isFullScreen(hWnd))
+	{
+		// the next pointers point on a storage of the properties of the "normal" window
+		DWORD * lpdwNormalStyle = 0;
+		RECT * lprcNormalPosition = 0;
+		std::map<HWND,CHook::WNDINFO>::const_iterator iterItem=m_mapWndInfo.find(hWnd);
+		if(iterItem!=m_mapWndInfo.end())
+		{
+			// If this window already in map, get storage from map
+			lpdwNormalStyle = &iterItem._Mynode()->_Myval.second.dwStyle;
+			lprcNormalPosition = &iterItem._Mynode()->_Myval.second.rcNormalPosition;
+		}
+		else
+		{
+			// If this it is first time for this window, then add new record to map ... 
+			CHook::WNDINFO wi={0};
+			std::pair<std::map<HWND,CHook::WNDINFO>::iterator, bool> iterBoolItem = m_mapWndInfo.insert(std::make_pair(hWnd, wi));
+			assert(iterBoolItem.second == true);
+			// ... and use it as a storage
+			lpdwNormalStyle = &iterBoolItem.first->second.dwStyle;
+			lprcNormalPosition = &iterBoolItem.first->second.rcNormalPosition;
+		}
+		FullScreenTools::setFullScreen(hWnd, lpdwNormalStyle, lprcNormalPosition);
 
+		CULApp::GetULApp()->m_pMainWnd->PostMessage(CWorkWnd::OSDM_MESSAGE,
+			(WPARAM)hWnd,(LPARAM)hkoToggleFullScreen);
+
+		return 1;						
+	}
+	else
+	{
+		std::map<HWND,CHook::WNDINFO>::const_iterator iterItem=m_mapWndInfo.find(hWnd);
+		if(iterItem!=m_mapWndInfo.end())
+		{
+			DWORD * lpdwNormalStyle = &iterItem._Mynode()->_Myval.second.dwStyle;;
+			RECT * lprcNormalPosition = &iterItem._Mynode()->_Myval.second.rcNormalPosition;
+
+			// Restore style, position and size of the window
+			if (lprcNormalPosition->left != lprcNormalPosition->right
+				&& lprcNormalPosition->top != lprcNormalPosition->bottom)
+				FullScreenTools::restoreNormalSize(hWnd, lpdwNormalStyle, lprcNormalPosition);
+
+			CULApp::GetULApp()->m_pMainWnd->PostMessage(CWorkWnd::OSDM_MESSAGE,
+				(WPARAM)hWnd,(LPARAM)hkoToggleFullScreen);
+		}
+	}
+	RedrawWindow(hWnd,NULL,NULL,RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+	return 1;
+}
 
 
 
