@@ -56,8 +56,14 @@
 #define IDC_RADIO_EVERY24HOURS                  1027
 #define IDC_RADIO_ATSTARTANDEVERY24HOURS        1028
 #define IDC_BUTTON_CHECKNOW                     1029
+#define IDC_COMBO_TOGGLEFULLSCREEN_MSG          1029
+#define IDC_CHECK_TOGGLEFULLSCREEN_ALT          1030
+#define IDC_CHECK_TOGGLEFULLSCREEN_CTRL         1031
 #define IDC_LIST_UPDATELOG                      1031
+#define IDC_CHECK_TOGGLEFULLSCREEN_SHIFT        1032
 #define IDC_STATIC_DOWNLOADPAGE                 1032
+#define IDC_CHECK_TOGGLEFULLSCREEN_WIN          1033
+#define IDC_CHECK_TOGGLEFULLSCREEN_ENABLE       1035
 #define IDM_ENABLE                              40000
 #define IDS_MENU_ENABLE                         40000
 #define IDM_DISABLE                             40001
