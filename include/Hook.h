@@ -30,6 +30,7 @@ typedef struct tagHotKeyInfo
 	BOOL m_fShift;
 	BOOL m_fWin;
 	UINT m_uMsg[3];
+	BOOL m_fEnabled;
 	tagHotKeyInfo& operator=(tagHotKeyInfo& HotKeyInfo);
 }HOTKEYINFO,*LPHOTKEYINFO;
 

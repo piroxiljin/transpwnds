@@ -34,6 +34,8 @@ typedef struct tagRegEntryNames
 	LPCTSTR m_strMsg2EntryName;
 	LPCTSTR m_strMsg3EntryName;
 	UINT m_uMsgDefault[3];
+	LPCTSTR m_strEnabledEntryName;
+	BOOL m_fEnabledDefault;
 }REGENTRYNAMES,*LPREGENTRYNAMES;
 
 static REGENTRYNAMES theRegEntryTable[] =
@@ -44,6 +46,7 @@ static REGENTRYNAMES theRegEntryTable[] =
 		, _T("TranspShift"), FALSE
 		, _T("TranspWin"), FALSE
 		, 0, 0, 0, {WM_MOUSEWHEEL, 0, 0}
+		, _T("TranspEnabled"), TRUE
 	}
 	,{hkoTopMost
 		, _T("TopMostAlt"), TRUE
@@ -51,6 +54,7 @@ static REGENTRYNAMES theRegEntryTable[] =
 		, _T("TopMostShift"), FALSE
 		, _T("TopMostWin"), FALSE
 		, _T("TopMostMsg"), 0, 0, {WM_LBUTTONDOWN, 0, 0}
+		, _T("TopMostEnabled"), TRUE
 	}
 	,{hkoMoveWnd
 		, _T("MoveWndAlt"), TRUE
@@ -58,6 +62,7 @@ static REGENTRYNAMES theRegEntryTable[] =
 		, _T("MoveWndShift"), FALSE
 		, _T("MoveWndWin"), FALSE
 		, _T("MoveWndMsg"), _T("MoveWndMsg1"), _T("MoveWndMsg2"), {WM_LBUTTONDOWN, WM_MOUSEMOVE, WM_LBUTTONUP}
+		, _T("MoveWndEnabled"), TRUE
 	}
 	,{hkoSizeWnd
 		, _T("SizeWndAlt"), TRUE
@@ -65,6 +70,7 @@ static REGENTRYNAMES theRegEntryTable[] =
 		, _T("SizeWndShift"), FALSE
 		, _T("SizeWndWin"), FALSE
 		, _T("SizeWndMsg"), _T("SizeWndMsg1"), _T("SizeWndMsg2"), {WM_RBUTTONDOWN, WM_MOUSEMOVE, WM_RBUTTONUP}
+		, _T("SizeWndEnabled"), TRUE
 	}
 	,{hkoToggleCaption
 		, _T("ToggleCaptionAlt"), TRUE
@@ -72,6 +78,7 @@ static REGENTRYNAMES theRegEntryTable[] =
 		, _T("ToggleCaptionShift"), FALSE
 		, _T("ToggleCaptionWin"), FALSE
 		, _T("ToggleCaptionMsg"), 0, 0, {WM_RBUTTONDOWN, 0, 0}
+		, _T("ToggleCaptionEnabled"), TRUE
 	}
 	,{hkoToggleCaption
 		, _T("ToggleCaptionAlt"), TRUE
@@ -79,6 +86,7 @@ static REGENTRYNAMES theRegEntryTable[] =
 		, _T("ToggleCaptionShift"), FALSE
 		, _T("ToggleCaptionWin"), FALSE
 		, _T("ToggleCaptionMsg"), 0, 0, {WM_RBUTTONDOWN, 0, 0}
+		, _T("ToggleCaptionEnabled"), TRUE
 	}
 };
 
@@ -127,6 +135,11 @@ void CWorkWnd::LoadSettings()
 			|| !m_ProfileReg.GetProfileInt(_T("HotKeys"),theRegEntryTable[curItem].m_strMsg3EntryName,&dwVal))
 			dwVal=theRegEntryTable[curItem].m_uMsgDefault[2];
 		CHook::GetHook()->m_arHotKeyInfo[curOp].m_uMsg[2]=dwVal;
+
+		if(theRegEntryTable[curItem].m_strEnabledEntryName == 0
+			|| !m_ProfileReg.GetProfileInt(_T("HotKeys"),theRegEntryTable[curItem].m_strEnabledEntryName,&dwVal))
+			dwVal=theRegEntryTable[curItem].m_fEnabledDefault;
+		CHook::GetHook()->m_arHotKeyInfo[curOp].m_fEnabled=(BOOL)dwVal;
 	}
 
 	//загрузка параметра метода перемещения окна
@@ -215,6 +228,10 @@ void CWorkWnd::SaveSettings()
 		if (theRegEntryTable[curItem].m_strMsg3EntryName != 0)
 			m_ProfileReg.WriteProfileInt(_T("HotKeys"),theRegEntryTable[curItem].m_strMsg3EntryName,
 				CHook::GetHook()->m_arHotKeyInfo[curOp].m_uMsg[2]);
+
+		if (theRegEntryTable[curItem].m_strEnabledEntryName != 0)
+			m_ProfileReg.WriteProfileInt(_T("HotKeys"),theRegEntryTable[curItem].m_strEnabledEntryName,
+				CHook::GetHook()->m_arHotKeyInfo[curOp].m_fEnabled);
 	}
 
 	//сохранение параметра метода перемещения окна

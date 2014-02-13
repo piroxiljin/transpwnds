@@ -27,6 +27,8 @@ LRESULT CALLBACK MouseProc(int nCode,WPARAM wParam,LPARAM lParam);
 
 bool tagHotKeyInfo::IsHotKey( PMSLLHOOKSTRUCT lpMouseHookStruct )
 {
+	if (!m_fEnabled)
+		return false;
 	BOOL fKeyState=HIWORD(GetKeyState(VK_MENU));
 	if((m_fAlt&&!fKeyState)||(!m_fAlt&&fKeyState))
 		return false;
@@ -55,6 +57,7 @@ tagHotKeyInfo& tagHotKeyInfo::operator=(tagHotKeyInfo& HotKeyInfo)
 	m_uMsg[0]=HotKeyInfo.m_uMsg[0];
 	m_uMsg[1]=HotKeyInfo.m_uMsg[1];
 	m_uMsg[2]=HotKeyInfo.m_uMsg[2];
+	m_fEnabled = HotKeyInfo.m_fEnabled;
 	return *this;
 }
 
