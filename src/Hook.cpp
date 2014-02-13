@@ -72,11 +72,6 @@ CHook::CHook(void):
 	m_arHotKeyInfo[hkoCollapseWnd].m_fCtrl=TRUE;
 	m_arHotKeyInfo[hkoCollapseWnd].m_fShift=TRUE;
 	m_arHotKeyInfo[hkoCollapseWnd].m_uMsg[0]=WM_LBUTTONDOWN;
-
-	m_arHotKeyInfo[hkoToggleFullScreen].m_fCtrl=TRUE;
-	m_arHotKeyInfo[hkoToggleFullScreen].m_fWin=TRUE;
-	m_arHotKeyInfo[hkoToggleFullScreen].m_uMsg[0]=WM_RBUTTONDOWN;
-	
 }
 
 CHook::~CHook(void)

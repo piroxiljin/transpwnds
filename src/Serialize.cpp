@@ -88,6 +88,14 @@ static REGENTRYNAMES theRegEntryTable[] =
 		, _T("ToggleCaptionMsg"), 0, 0, {WM_RBUTTONDOWN, 0, 0}
 		, _T("ToggleCaptionEnabled"), TRUE
 	}
+	,{hkoToggleFullScreen
+		, _T("ToggleFullScreenAlt"), FALSE
+		, _T("ToggleFullScreenCtrl"), TRUE
+		, _T("ToggleFullScreenShift"), FALSE
+		, _T("ToggleFullScreenWin"), TRUE
+		, _T("ToggleFullScreenMsg"), 0, 0, {WM_RBUTTONDOWN, 0, 0}
+		, _T("ToggleFullScreenEnabled"), TRUE
+	}
 };
 
 static INT theRegEntryTableLength = sizeof(theRegEntryTable)/sizeof(theRegEntryTable[0]);
