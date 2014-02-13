@@ -17,6 +17,79 @@
  */
 #include "../Include/PropHotKeys.h"
 #include "../res/resource.h"
+
+typedef struct tagDialogControls
+{
+	enHotKeyOperations m_enHotKeyOperation;
+	int m_idcCheckEnabled;
+	int m_idcCheckAlt;
+	int m_idcCheckCtrl;
+	int m_idcCheckShift;
+	int m_idcCheckWin;
+	int m_idcComboMsg;
+	BOOL m_fUpdateMsg2;
+}DIALOGCONTROLS, *LPDIALOGCONTROLS;
+
+const static DIALOGCONTROLS theDialgControlsTable[] = 
+{
+	{hkoTransp,
+		0, // checkbox enabled
+		IDC_CHECK_TRANSP_ALT, // checkbox alt
+		IDC_CHECK_TRANSP_CTRL, // checkbox ctrl
+		IDC_CHECK_TRANSP_SHIFT, // checkbox shift
+		IDC_CHECK_TRANSP_WIN, // checkbox win
+		0, // combobox messages
+		FALSE, // update m_uMsg[2]
+	},
+	{hkoTopMost,
+		0, // checkbox enabled
+		IDC_CHECK_TOPMOST_ALT, // checkbox alt
+		IDC_CHECK_TOPMOST_CTRL, // checkbox ctrl
+		IDC_CHECK_TOPMOST_SHIFT, // checkbox shift
+		IDC_CHECK_TOPMOST_WIN, // checkbox win
+		IDC_COMBO_TOPMOST_MSG, // combobox messages
+		FALSE, // update m_uMsg[2]
+	},
+	{hkoMoveWnd,
+		0, // checkbox enabled
+		IDC_CHECK_MOVE_ALT, // checkbox alt
+		IDC_CHECK_MOVE_CTRL, // checkbox ctrl
+		IDC_CHECK_MOVE_SHIFT, // checkbox shift
+		IDC_CHECK_MOVE_WIN, // checkbox win
+		IDC_COMBO_MOVE_MSG, // combobox messages
+		TRUE, // update m_uMsg[2]
+	},
+	{hkoSizeWnd,
+		0, // checkbox enabled
+		IDC_CHECK_SIZE_ALT, // checkbox alt
+		IDC_CHECK_SIZE_CTRL, // checkbox ctrl
+		IDC_CHECK_SIZE_SHIFT, // checkbox shift
+		IDC_CHECK_SIZE_WIN, // checkbox win
+		IDC_COMBO_SIZE_MSG, // combobox messages
+		TRUE, // update m_uMsg[2]
+	},
+	{hkoToggleCaption,
+		0, // checkbox enabled
+		IDC_CHECK_TOGGLECAPTION_ALT, // checkbox alt
+		IDC_CHECK_TOGGLECAPTION_CTRL, // checkbox ctrl
+		IDC_CHECK_TOGGLECAPTION_SHIFT, // checkbox shift
+		IDC_CHECK_TOGGLECAPTION_WIN, // checkbox win
+		IDC_COMBO_TOGGLECAPTION_MSG, // combobox messages
+		FALSE, // update m_uMsg[2]
+	},
+	{hkoToggleFullScreen,
+		IDC_CHECK_TOGGLEFULLSCREEN_ENABLE, // checkbox enabled
+		IDC_CHECK_TOGGLEFULLSCREEN_ALT, // checkbox alt
+		IDC_CHECK_TOGGLEFULLSCREEN_CTRL, // checkbox ctrl
+		IDC_CHECK_TOGGLEFULLSCREEN_SHIFT, // checkbox shift
+		IDC_CHECK_TOGGLEFULLSCREEN_WIN, // checkbox win
+		IDC_COMBO_TOGGLEFULLSCREEN_MSG, // combobox messages
+		FALSE, // update m_uMsg[2]
+	},
+};
+
+const static INT theDialgControlsTableLength = sizeof(theDialgControlsTable)/sizeof(theDialgControlsTable[0]);
+
 CPropHotKeys::CPropHotKeys(void):
 	CULPropPage()
 {
@@ -30,121 +103,45 @@ CPropHotKeys::~CPropHotKeys(void)
 
 LRESULT CPropHotKeys::OnInitDialog(WPARAM w,LPARAM l)
 {
-	//инициализируем горячие клавиши изменения прозрачности
+	for (int curItem=0;curItem<theDialgControlsTableLength;++curItem)
 	{
-		SendDlgItemMessage(IDC_CHECK_TRANSP_ALT,BM_SETCHECK,
-			m_arHotkey[hkoTransp].m_fAlt,0);
-		SendDlgItemMessage(IDC_CHECK_TRANSP_CTRL,BM_SETCHECK,
-			m_arHotkey[hkoTransp].m_fCtrl,0);
-		SendDlgItemMessage(IDC_CHECK_TRANSP_SHIFT,BM_SETCHECK,
-			m_arHotkey[hkoTransp].m_fShift,0);
-		SendDlgItemMessage(IDC_CHECK_TRANSP_WIN,BM_SETCHECK,
-			m_arHotkey[hkoTransp].m_fWin,0);
+		enHotKeyOperations curOp=theDialgControlsTable[curItem].m_enHotKeyOperation;
+		if (theDialgControlsTable[curItem].m_idcCheckEnabled != 0)
+			SendDlgItemMessage(theDialgControlsTable[curItem].m_idcCheckEnabled,BM_SETCHECK,
+				m_arHotkey[curOp].m_fEnabled,0);
+		if (theDialgControlsTable[curItem].m_idcCheckAlt != 0)
+			SendDlgItemMessage(theDialgControlsTable[curItem].m_idcCheckAlt,BM_SETCHECK,
+				m_arHotkey[curOp].m_fAlt,0);
+		if (theDialgControlsTable[curItem].m_idcCheckCtrl != 0)
+			SendDlgItemMessage(theDialgControlsTable[curItem].m_idcCheckCtrl,BM_SETCHECK,
+				m_arHotkey[curOp].m_fCtrl,0);
+		if (theDialgControlsTable[curItem].m_idcCheckShift != 0)
+			SendDlgItemMessage(theDialgControlsTable[curItem].m_idcCheckShift,BM_SETCHECK,
+				m_arHotkey[curOp].m_fShift,0);
+		if (theDialgControlsTable[curItem].m_idcCheckWin != 0)
+			SendDlgItemMessage(theDialgControlsTable[curItem].m_idcCheckWin,BM_SETCHECK,
+				m_arHotkey[curOp].m_fWin,0);
+
+		if (theDialgControlsTable[curItem].m_idcComboMsg != 0)
+		{
+			CULComboBox cbItemMsg;
+			cbItemMsg.Attach(GetDlgItem(theDialgControlsTable[curItem].m_idcComboMsg));
+			int nItem=cbItemMsg.AddString(CULStrTable(IDS_OPTOINS_COMBO_LBTN));
+			cbItemMsg.SetItemData(nItem,WM_LBUTTONDOWN);
+			nItem=cbItemMsg.AddString(CULStrTable(IDS_OPTOINS_COMBO_RBTN));
+			cbItemMsg.SetItemData(nItem,WM_RBUTTONDOWN);
+			nItem=cbItemMsg.AddString(CULStrTable(IDS_OPTOINS_COMBO_MBTN));
+			cbItemMsg.SetItemData(nItem,WM_MBUTTONDOWN);
+			for(int i=0;i<cbItemMsg.GetCount();++i)
+				if(m_arHotkey[curOp].IsMsg(0,cbItemMsg.GetItemData(i)))
+				{
+					cbItemMsg.SetCurSel(i);
+					break;
+				}
+			cbItemMsg.Detach();
+		}
 	}
-	//инициализируем горячие клавиши для топмост
-	{
-		SendDlgItemMessage(IDC_CHECK_TOPMOST_ALT,BM_SETCHECK,
-			m_arHotkey[hkoTopMost].m_fAlt,0);
-		SendDlgItemMessage(IDC_CHECK_TOPMOST_CTRL,BM_SETCHECK,
-			m_arHotkey[hkoTopMost].m_fCtrl,0);
-		SendDlgItemMessage(IDC_CHECK_TOPMOST_SHIFT,BM_SETCHECK,
-			m_arHotkey[hkoTopMost].m_fShift,0);
-		SendDlgItemMessage(IDC_CHECK_TOPMOST_WIN,BM_SETCHECK,
-			m_arHotkey[hkoTopMost].m_fWin,0);
-		CULComboBox cbTopMost;
-		cbTopMost.Attach(GetDlgItem(IDC_COMBO_TOPMOST_MSG));
-		int nItem=cbTopMost.AddString(CULStrTable(IDS_OPTOINS_COMBO_LBTN));
-		cbTopMost.SetItemData(nItem,WM_LBUTTONDOWN);
-		nItem=cbTopMost.AddString(CULStrTable(IDS_OPTOINS_COMBO_RBTN));
-		cbTopMost.SetItemData(nItem,WM_RBUTTONDOWN);
-		nItem=cbTopMost.AddString(CULStrTable(IDS_OPTOINS_COMBO_MBTN));
-		cbTopMost.SetItemData(nItem,WM_MBUTTONDOWN);
-		for(int i=0;i<cbTopMost.GetCount();++i)
-			if(m_arHotkey[hkoTopMost].IsMsg(0,cbTopMost.GetItemData(i)))
-			{
-				cbTopMost.SetCurSel(i);
-				break;
-			}
-		cbTopMost.Detach();
-	}
-	//инициализируем горячие клавиши для move
-	{
-		SendDlgItemMessage(IDC_CHECK_MOVE_ALT,BM_SETCHECK,
-			m_arHotkey[hkoMoveWnd].m_fAlt,0);
-		SendDlgItemMessage(IDC_CHECK_MOVE_CTRL,BM_SETCHECK,
-			m_arHotkey[hkoMoveWnd].m_fCtrl,0);
-		SendDlgItemMessage(IDC_CHECK_MOVE_SHIFT,BM_SETCHECK,
-			m_arHotkey[hkoMoveWnd].m_fShift,0);
-		SendDlgItemMessage(IDC_CHECK_MOVE_WIN,BM_SETCHECK,
-			m_arHotkey[hkoMoveWnd].m_fWin,0);
-		CULComboBox cbMove;
-		cbMove.Attach(GetDlgItem(IDC_COMBO_MOVE_MSG));
-		int nItem=cbMove.AddString(CULStrTable(IDS_OPTOINS_COMBO_LBTN));
-		cbMove.SetItemData(nItem,WM_LBUTTONDOWN);
-		nItem=cbMove.AddString(CULStrTable(IDS_OPTOINS_COMBO_RBTN));
-		cbMove.SetItemData(nItem,WM_RBUTTONDOWN);
-		nItem=cbMove.AddString(CULStrTable(IDS_OPTOINS_COMBO_MBTN));
-		cbMove.SetItemData(nItem,WM_MBUTTONDOWN);
-		for(int i=0;i<cbMove.GetCount();++i)
-			if(m_arHotkey[hkoMoveWnd].IsMsg(0,cbMove.GetItemData(i)))
-			{
-				cbMove.SetCurSel(i);
-				break;
-			}
-		cbMove.Detach();
-	}
-	//инициализируем горячие клавиши для size
-	{
-		SendDlgItemMessage(IDC_CHECK_SIZE_ALT,BM_SETCHECK,
-			m_arHotkey[hkoSizeWnd].m_fAlt,0);
-		SendDlgItemMessage(IDC_CHECK_SIZE_CTRL,BM_SETCHECK,
-			m_arHotkey[hkoSizeWnd].m_fCtrl,0);
-		SendDlgItemMessage(IDC_CHECK_SIZE_SHIFT,BM_SETCHECK,
-			m_arHotkey[hkoSizeWnd].m_fShift,0);
-		SendDlgItemMessage(IDC_CHECK_SIZE_WIN,BM_SETCHECK,
-			m_arHotkey[hkoSizeWnd].m_fWin,0);
-		CULComboBox cbSize;
-		cbSize.Attach(GetDlgItem(IDC_COMBO_SIZE_MSG));
-		int nItem=cbSize.AddString(CULStrTable(IDS_OPTOINS_COMBO_LBTN));
-		cbSize.SetItemData(nItem,WM_LBUTTONDOWN);
-		nItem=cbSize.AddString(CULStrTable(IDS_OPTOINS_COMBO_RBTN));
-		cbSize.SetItemData(nItem,WM_RBUTTONDOWN);
-		nItem=cbSize.AddString(CULStrTable(IDS_OPTOINS_COMBO_MBTN));
-		cbSize.SetItemData(nItem,WM_MBUTTONDOWN);
-		for(int i=0;i<cbSize.GetCount();++i)
-			if(m_arHotkey[hkoSizeWnd].IsMsg(0,cbSize.GetItemData(i)))
-			{
-				cbSize.SetCurSel(i);
-				break;
-			}
-		cbSize.Detach();
-	}	
-	//инициализируем горячие клавиши для ToggleCaption
-	{
-		SendDlgItemMessage(IDC_CHECK_TOGGLECAPTION_ALT,BM_SETCHECK,
-			m_arHotkey[hkoToggleCaption].m_fAlt,0);
-		SendDlgItemMessage(IDC_CHECK_TOGGLECAPTION_CTRL,BM_SETCHECK,
-			m_arHotkey[hkoToggleCaption].m_fCtrl,0);
-		SendDlgItemMessage(IDC_CHECK_TOGGLECAPTION_SHIFT,BM_SETCHECK,
-			m_arHotkey[hkoToggleCaption].m_fShift,0);
-		SendDlgItemMessage(IDC_CHECK_TOGGLECAPTION_WIN,BM_SETCHECK,
-			m_arHotkey[hkoToggleCaption].m_fWin,0);
-		CULComboBox cbToggleCaption;
-		cbToggleCaption.Attach(GetDlgItem(IDC_COMBO_TOGGLECAPTION_MSG));
-		int nItem=cbToggleCaption.AddString(CULStrTable(IDS_OPTOINS_COMBO_LBTN));
-		cbToggleCaption.SetItemData(nItem,WM_LBUTTONDOWN);
-		nItem=cbToggleCaption.AddString(CULStrTable(IDS_OPTOINS_COMBO_RBTN));
-		cbToggleCaption.SetItemData(nItem,WM_RBUTTONDOWN);
-		nItem=cbToggleCaption.AddString(CULStrTable(IDS_OPTOINS_COMBO_MBTN));
-		cbToggleCaption.SetItemData(nItem,WM_MBUTTONDOWN);
-		for(int i=0;i<cbToggleCaption.GetCount();++i)
-			if(m_arHotkey[hkoToggleCaption].IsMsg(0,cbToggleCaption.GetItemData(i)))
-			{
-				cbToggleCaption.SetCurSel(i);
-				break;
-			}
-		cbToggleCaption.Detach();
-	}
+
 	return CULPropPage::OnInitDialog(w,l);
 }
 
@@ -164,100 +161,50 @@ LRESULT CPropHotKeys::OnCtlColor(WPARAM w,LPARAM l)
 
 LRESULT CPropHotKeys::OnApply(BYTE nReturn)
 {
-	//возвращаем значение горячих клавиш изменения прозрачности
+	for (int curItem=0;curItem<theDialgControlsTableLength;++curItem)
 	{
-		m_arHotkey[hkoTransp].m_fAlt=(SendDlgItemMessage(IDC_CHECK_TRANSP_ALT,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoTransp].m_fCtrl=(SendDlgItemMessage(IDC_CHECK_TRANSP_CTRL,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoTransp].m_fShift=(SendDlgItemMessage(IDC_CHECK_TRANSP_SHIFT,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoTransp].m_fWin=(SendDlgItemMessage(IDC_CHECK_TRANSP_WIN,
-			BM_GETCHECK,0,0)!=0);
-	}
-	//возвращаем значение горячих клавиш для топмост
-	{
-		m_arHotkey[hkoTopMost].m_fAlt=(SendDlgItemMessage(IDC_CHECK_TOPMOST_ALT,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoTopMost].m_fCtrl=(SendDlgItemMessage(IDC_CHECK_TOPMOST_CTRL,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoTopMost].m_fShift=(SendDlgItemMessage(IDC_CHECK_TOPMOST_SHIFT,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoTopMost].m_fWin=(SendDlgItemMessage(IDC_CHECK_TOPMOST_WIN,
-			BM_GETCHECK,0,0)!=0);
-		CULComboBox cbTopMost;
-		cbTopMost.Attach(GetDlgItem(IDC_COMBO_TOPMOST_MSG));
-		m_arHotkey[hkoTopMost].m_uMsg[0]=cbTopMost.GetItemData(cbTopMost.GetCurSel());
-		cbTopMost.Detach();
-	}
-	//возвращаем значение горячих клавиш для move
-	{
-		m_arHotkey[hkoMoveWnd].m_fAlt=(SendDlgItemMessage(IDC_CHECK_MOVE_ALT,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoMoveWnd].m_fCtrl=(SendDlgItemMessage(IDC_CHECK_MOVE_CTRL,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoMoveWnd].m_fShift=(SendDlgItemMessage(IDC_CHECK_MOVE_SHIFT,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoMoveWnd].m_fWin=(SendDlgItemMessage(IDC_CHECK_MOVE_WIN,
-			BM_GETCHECK,0,0)!=0);
-		CULComboBox cbMove;
-		cbMove.Attach(GetDlgItem(IDC_COMBO_MOVE_MSG));
-		m_arHotkey[hkoMoveWnd].m_uMsg[0]=cbMove.GetItemData(cbMove.GetCurSel());
-		switch(m_arHotkey[hkoMoveWnd].m_uMsg[0])
+		enHotKeyOperations curOp=theDialgControlsTable[curItem].m_enHotKeyOperation;
+
+		if (theDialgControlsTable[curItem].m_idcCheckEnabled != 0)
+			m_arHotkey[curOp].m_fEnabled=(SendDlgItemMessage(theDialgControlsTable[curItem].m_idcCheckEnabled,
+				BM_GETCHECK,0,0)!=0);
+		if (theDialgControlsTable[curItem].m_idcCheckAlt != 0)
+			m_arHotkey[curOp].m_fAlt=(SendDlgItemMessage(theDialgControlsTable[curItem].m_idcCheckAlt,
+				BM_GETCHECK,0,0)!=0);
+		if (theDialgControlsTable[curItem].m_idcCheckCtrl != 0)
+			m_arHotkey[curOp].m_fCtrl=(SendDlgItemMessage(theDialgControlsTable[curItem].m_idcCheckCtrl,
+				BM_GETCHECK,0,0)!=0);
+		if (theDialgControlsTable[curItem].m_idcCheckShift != 0)
+			m_arHotkey[curOp].m_fShift=(SendDlgItemMessage(theDialgControlsTable[curItem].m_idcCheckShift,
+				BM_GETCHECK,0,0)!=0);
+		if (theDialgControlsTable[curItem].m_idcCheckWin != 0)
+			m_arHotkey[curOp].m_fWin=(SendDlgItemMessage(theDialgControlsTable[curItem].m_idcCheckWin,
+				BM_GETCHECK,0,0)!=0);
+	
+		if (theDialgControlsTable[curItem].m_idcComboMsg != 0)
 		{
-		case WM_LBUTTONDOWN:
-			m_arHotkey[hkoMoveWnd].IsMsg(2,WM_LBUTTONUP);
-			break;
-		case WM_MBUTTONDOWN:
-			m_arHotkey[hkoMoveWnd].IsMsg(2,WM_MBUTTONUP);
-			break;
-		case WM_RBUTTONDOWN:
-			m_arHotkey[hkoMoveWnd].IsMsg(2,WM_RBUTTONUP);
-			break;
+			CULComboBox cbItemMsg;
+			cbItemMsg.Attach(GetDlgItem(theDialgControlsTable[curItem].m_idcComboMsg));
+			m_arHotkey[curOp].m_uMsg[0]=cbItemMsg.GetItemData(cbItemMsg.GetCurSel());
+
+			if (theDialgControlsTable[curItem].m_fUpdateMsg2)
+			{
+				switch(m_arHotkey[curOp].m_uMsg[0])
+				{
+				case WM_LBUTTONDOWN:
+					m_arHotkey[curOp].m_uMsg[2] = WM_LBUTTONUP;
+					break;
+				case WM_MBUTTONDOWN:
+					m_arHotkey[curOp].m_uMsg[2] = WM_MBUTTONUP;
+					break;
+				case WM_RBUTTONDOWN:
+					m_arHotkey[curOp].m_uMsg[2] = WM_RBUTTONUP;
+					break;
+				}
+			}
+			cbItemMsg.Detach();
 		}
-		cbMove.Detach();
 	}
-	//возвращаем значение горячих клавиш для size
-	{
-		m_arHotkey[hkoSizeWnd].m_fAlt=(SendDlgItemMessage(IDC_CHECK_SIZE_ALT,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoSizeWnd].m_fCtrl=(SendDlgItemMessage(IDC_CHECK_SIZE_CTRL,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoSizeWnd].m_fShift=(SendDlgItemMessage(IDC_CHECK_SIZE_SHIFT,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoSizeWnd].m_fWin=(SendDlgItemMessage(IDC_CHECK_SIZE_WIN,
-			BM_GETCHECK,0,0)!=0);
-		CULComboBox cbSize;
-		cbSize.Attach(GetDlgItem(IDC_COMBO_SIZE_MSG));
-		m_arHotkey[hkoSizeWnd].m_uMsg[0]=cbSize.GetItemData(cbSize.GetCurSel());
-		switch(m_arHotkey[hkoSizeWnd].m_uMsg[0])
-		{
-		case WM_LBUTTONDOWN:
-			m_arHotkey[hkoSizeWnd].IsMsg(2,WM_LBUTTONUP);
-			break;
-		case WM_MBUTTONDOWN:
-			m_arHotkey[hkoSizeWnd].IsMsg(2,WM_MBUTTONUP);
-			break;
-		case WM_RBUTTONDOWN:
-			m_arHotkey[hkoSizeWnd].IsMsg(2,WM_RBUTTONUP);
-			break;
-		}
-		cbSize.Detach();
-	}
-	//возвращаем значение горячих клавиш для Toggle Caption
-	{
-		m_arHotkey[hkoToggleCaption].m_fAlt=(SendDlgItemMessage(IDC_CHECK_TOGGLECAPTION_ALT,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoToggleCaption].m_fCtrl=(SendDlgItemMessage(IDC_CHECK_TOGGLECAPTION_CTRL,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoToggleCaption].m_fShift=(SendDlgItemMessage(IDC_CHECK_TOGGLECAPTION_SHIFT,
-			BM_GETCHECK,0,0)!=0);
-		m_arHotkey[hkoToggleCaption].m_fWin=(SendDlgItemMessage(IDC_CHECK_TOGGLECAPTION_WIN,
-			BM_GETCHECK,0,0)!=0);
-		CULComboBox cbToggleCaption;
-		cbToggleCaption.Attach(GetDlgItem(IDC_COMBO_TOGGLECAPTION_MSG));
-		m_arHotkey[hkoToggleCaption].m_uMsg[0]=cbToggleCaption.GetItemData(cbToggleCaption.GetCurSel());
-		cbToggleCaption.Detach();
-	}
+
 	return CULPropPage::OnApply(nReturn);
 }
